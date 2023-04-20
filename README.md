@@ -70,3 +70,39 @@ Arguments: ['-', '--hype-level=awesomeness']
   "port": 9999
 }
 ```
+
+### Install and Bootstrap Flux
+
+Obviously the whole documentation can live in a shell script as comment. In case
+you want to add images and links to other pages, you can still "execute" the
+documentation about how to install [Flux](https://fluxcd.io/flux/installation/).
+Of course this example installs and bootstraps only one specific way.
+
+```bash
+❯ eval-md bash example/install-flux.md
+ !! git repository is not defined.
+ --help            This help message
+ --repo <repo>     Git repository. (example: git@github.com/org/repo)
+ --branch <branch> Git branch. [default: main]
+ --path <path>     Path to the cluster. [default: ./clusters/management]
+
+❯ eval-md bash example/install-flux.md -- --repo git@github.com/yitsushi/cluster-conf --branch production
+...
+```
+
+### Deploy Helm Release with Flux
+
+The `example/flux-helm-repo.md` example shows a simple scenario where we
+describe how to deploy helm charts on a cluster. Usually that comes with a lot
+of copy-paste, but we can be smart with `eval-md`.
+
+This simple command will evaluate all `bash` in the markdown file. The only
+`bash` snippet is the one that exports `yaml` blocks and pass it to `kubectl`.
+At the end, we have a nice documentation (not this one, it's mostly just filler
+text, did not really spend much time on it).
+
+```bash
+❯ eval-md bash example/flux-helm-repo.md
+helmrepository.source.toolkit.fluxcd.io/podinfo created
+helmrelease.helm.toolkit.fluxcd.io/podinfo created
+```
