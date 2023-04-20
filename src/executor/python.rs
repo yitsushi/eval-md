@@ -23,6 +23,17 @@ impl Executor for Python {
 
         prog
     }
+
+    fn export(&self, script: Vec<String>) -> String {
+        let mut header: Vec<String> = vec![
+            "#!/usr/bin/env python3".into(),
+            "".into(),
+        ];
+
+        header.extend(script);
+
+        header.join("\n")
+    }
 }
 
 impl Python {

@@ -6,10 +6,21 @@ use clap::Parser;
 use executor::Executor;
 
 #[derive(Debug, Parser)]
+#[command(author, version, about, long_about = None)]
 struct Args {
+    /// Language to extract.
     language: String,
+    /// Source file.
     file: String,
+    /// Arguments to the script.
     args: Vec<String>,
+
+    /// Export the scirpt and skip execution.
+    /// Export accepts any string value as target language.
+    #[arg(short, long)]
+    export: bool,
+
+    /// Debug mode.
     #[arg(short, long)]
     debug: bool,
 }
@@ -51,15 +62,30 @@ fn main() {
             "zsh" => Box::new(executor::Shell::new("zsh")),
             "ruby" => Box::new(executor::Ruby::new()),
             _ => {
-                println!(" -- unknown language: {}", arguments.language);
-                println!("    available languages:");
-                println!("     - python");
-                println!("     - bash");
-                println!("     - zsh");
-                println!("     - ruby");
+                if arguments.export {
+                    println!("{}", content.join("\n"));
+
+                    return
+                }
+
+                println!(" -- unknown language: {0}\n\
+                             available languages:\n\
+                              - python\n\
+                              - bash\n\
+                              - zsh\n\
+                              - ruby\n\
+                         ", arguments.language);
+
                 return
             },
         };
+
+        if arguments.export {
+            println!("{}", lang.export(content));
+
+            return
+        }
+
 
         let prog = lang.exec(content, arguments.args);
 

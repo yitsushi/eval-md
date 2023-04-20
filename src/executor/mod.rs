@@ -10,4 +10,5 @@ pub use ruby::Ruby;
 
 pub trait Executor {
     fn exec(&self, script: Vec<String>, argv: Vec<String>) -> Child;
+    fn export(&self, script: Vec<String>) -> String;
 }

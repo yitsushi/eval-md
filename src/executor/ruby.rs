@@ -23,6 +23,17 @@ impl Executor for Ruby {
 
         prog
     }
+
+    fn export(&self, script: Vec<String>) -> String {
+        let mut header: Vec<String> = vec![
+            "#!/usr/bin/env ruby".into(),
+            "".into(),
+        ];
+
+        header.extend(script);
+
+        header.join("\n")
+    }
 }
 
 impl Ruby {

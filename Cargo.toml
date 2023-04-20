@@ -1,9 +1,9 @@
 [package]
 name = "eval-md"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = [ "Efertone <efertone@pm.me>" ]
-description = "This is a tool to evaluate code from Markdown files"
+description = "This is a tool to evaluate or export code from Markdown files"
 readme = "README.md"
 homepage = "https://github.com/yitsushi/eval-md"
 repository = "https://github.com/yitsushi/eval-md"

@@ -36,3 +36,29 @@ print(f"Arguments: {sys.argv}")
 puts "it works :)"
 puts "Arguments: #{ARGV}"
 ```
+
+## JSON config File
+
+I can comment on sections
+```json
+{
+```
+
+Enable registration and disable debug mode:
+
+```json
+  "enable_registration": true,
+  "debug": false,
+```
+
+Server information:
+
+```json
+  "hostname": "efertone.me",
+  "port": 9999
+```
+
+And still get the whole JSON config file with export.
+```json
+}
+```

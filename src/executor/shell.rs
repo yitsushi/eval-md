@@ -15,12 +15,7 @@ impl Executor for Shell {
         let mut args = vec!["/dev/stdin".to_string()];
         args.extend(argv);
 
-        let target = match self {
-            Self::Bash => "bash",
-            Self::Zsh => "zsh",
-        };
-
-        let mut prog = Command::new(target)
+        let mut prog = Command::new(self.target_str())
             .args(args)
             .stdin(Stdio::piped())
             .spawn()
@@ -33,6 +28,17 @@ impl Executor for Shell {
 
         prog
     }
+
+    fn export(&self, script: Vec<String>) -> String {
+        let mut header: Vec<String> = vec![
+            format!("#!/usr/bin/env {}", self.target_str()),
+            "".into(),
+        ];
+
+        header.extend(script);
+
+        header.join("\n")
+    }
 }
 
 impl Shell {
@@ -41,6 +47,13 @@ impl Shell {
             "bash" => Shell::Bash,
             "zsh" => Shell::Zsh,
             _ => Shell::default(),
+        }
+    }
+
+    fn target_str(&self) -> &'static str {
+        match self {
+            Shell::Bash => "bash",
+            Shell::Zsh => "zsh",
         }
     }
 }
