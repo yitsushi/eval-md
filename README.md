@@ -18,10 +18,11 @@ cargo install eval-md
 
 ## Supported languages
 
-* Bash
+* JavaScript (node, deno)
+* Lua
 * Python3
 * Ruby
-* Zsh
+* Shell (bash, zsh)
 
 ## Export
 
@@ -33,6 +34,16 @@ about sections of the configuration file.
 
 In the output, a header will be added, for example Python scripts get
 `#!/usr/bin/env python3` on `--export`.
+
+## Custom Tag
+
+Custom tag and executor can be defined with `:`. The first part will be the
+string tag to extract code blocks, and the second part will be the language that
+will evaluate the extracted code.
+
+* `py:python` => will parse `py` and run as `python`
+* `js` => will parse `js` and run as `js` (`js` is an alias to javascript)
+* `js:deno` => will parse `js` and run with `deno`
 
 ## Examples
 
@@ -69,6 +80,12 @@ Arguments: ['-', '--hype-level=awesomeness']
   "hostname": "efertone.me",
   "port": 9999
 }
+
+❯ eval-md lua example/test.md
+Value:  15
+
+❯ eval-md something:javascript example/test.md
+Fancy
 ```
 
 ### Install and Bootstrap Flux

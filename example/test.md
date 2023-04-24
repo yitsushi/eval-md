@@ -62,3 +62,28 @@ And still get the whole JSON config file with export.
 ```json
 }
 ```
+
+### Lua
+
+```lua
+local variable = 15
+print("Value:", variable)
+```
+
+### JavaScript with Node
+
+```javascript
+const fancy = function() {
+  return "Fancy";
+};
+console.log(fancy());
+```
+
+### Custom tag
+
+```something
+const fancy = function() {
+  return "Fancy";
+};
+console.log(fancy());
+```

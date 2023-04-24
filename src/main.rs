@@ -3,12 +3,13 @@ use std::{io::{self, BufRead}, fs::File, path::Path};
 mod executor;
 
 use clap::Parser;
-use executor::Executor;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
 struct Args {
     /// Language to extract.
+    /// Executor can be defined with ':', for example:
+    /// js:node or py:python.
     language: String,
     /// Source file.
     file: String,
@@ -32,7 +33,7 @@ where P: AsRef<Path>, {
 }
 
 fn main() {
-    let arguments = Args::parse();
+    let arguments: Args = Args::parse();
 
     if arguments.debug {
         println!(" -- Target Language: {}", arguments.language);
@@ -41,10 +42,23 @@ fn main() {
     }
 
     if let Ok(lines) = read_lines(arguments.file) {
+        let (name, executor) = if arguments.language.contains(':') {
+            let parts = arguments.language.split(':').collect::<Vec<&str>>();
+
+            (parts.first().unwrap().to_owned(), parts.get(1).unwrap().to_owned())
+        } else {
+            (arguments.language.as_str(), arguments.language.as_str())
+        };
+
+        if arguments.debug {
+            println!(" -- Target Language: {}", name);
+            println!(" -- Target Executor: {}", executor);
+        }
+
         let mut open = false;
         let content: Vec<String> = lines.into_iter().fold(Vec::<String>::new(), |mut c, line| {
             if let Ok(line) = line {
-                if line == format!("```{}", arguments.language) {
+                if line == format!("```{}", name) {
                     open = true;
                 } else if line == "```" {
                     open = false;
@@ -56,28 +70,37 @@ fn main() {
             c
         });
 
-        let lang: Box<dyn Executor> = match arguments.language.as_str() {
-            "python" => Box::new(executor::Python::new()),
-            "bash" => Box::new(executor::Shell::new("bash")),
-            "zsh" => Box::new(executor::Shell::new("zsh")),
-            "ruby" => Box::new(executor::Ruby::new()),
-            _ => {
-                if arguments.export {
-                    println!("{}", content.join("\n"));
-
-                    return
-                }
-
-                println!(" -- unknown language: {0}\n\
-                             available languages:\n\
-                              - python\n\
-                              - bash\n\
-                              - zsh\n\
-                              - ruby\n\
-                         ", arguments.language);
+        let lang = if let Some(lang) = executor::language_picker(executor) {
+            lang
+        } else {
+            if arguments.export {
+                println!("{}", content.join("\n"));
 
                 return
-            },
+            }
+
+
+            println!(" -- unknown language: {0}\n\
+                     available languages:\n\
+                     {1}\n\
+                     \n\
+                     aliases:\n\
+                     {2}\n\
+                     ",
+                     arguments.language,
+                     executor::supported_languages()
+                                .iter()
+                                .map(|l| format!(" - {}", l))
+                                .collect::<Vec<String>>()
+                                .join("\n"),
+                     executor::aliases()
+                                .iter()
+                                .map(|(a, n, e)| format!(" - {:<15} => {}::{}", a, n, e))
+                                .collect::<Vec<String>>()
+                                .join("\n")
+            );
+
+            return
         };
 
         if arguments.export {
