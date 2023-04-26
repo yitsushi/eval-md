@@ -10,6 +10,9 @@ be easily consumed by the reader, yet it can be executed without copy-paste. If
 the file has more than one code block with given language, `eval-md` will
 combine them and evaluate as one script.
 
+[![Quality Check](https://github.com/yitsushi/eval-md/actions/workflows/quality-check.yaml/badge.svg)](https://github.com/yitsushi/eval-md/actions/workflows/quality-check.yaml)
+[![codecov](https://codecov.io/gh/yitsushi/eval-md/branch/main/graph/badge.svg?token=QTTVYOULF1)](https://codecov.io/gh/yitsushi/eval-md)
+
 ## Install
 
 ```bash
