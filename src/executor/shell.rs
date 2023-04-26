@@ -12,11 +12,8 @@ pub enum Shell {
 
 impl Executor for Shell {
     fn exec(&self, script: Vec<String>, argv: Vec<String>) -> std::process::Child {
-        let mut args = vec!["/dev/stdin".to_string()];
-        args.extend(argv);
-
         let mut prog = Command::new(self.target_str())
-            .args(args)
+            .args(self.args(argv))
             .stdin(Stdio::piped())
             .spawn()
             .unwrap();
@@ -39,6 +36,10 @@ impl Executor for Shell {
 
         header.join("\n")
     }
+
+    fn binary(&self) -> &'static str {
+        self.target_str()
+    }
 }
 
 impl Shell {
@@ -55,5 +56,64 @@ impl Shell {
             Shell::Bash => "bash",
             Shell::Zsh => "zsh",
         }
+    }
+
+    fn args(&self, args: Vec<String>) -> Vec<String> {
+        let mut argv = vec!["/dev/stdin".to_string()];
+        argv.extend(args);
+        argv
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_default_export() {
+        let lang = Shell::default();
+        let output = lang.export(vec!["echo \"check\"".into()]);
+        let expected_output = "#!/usr/bin/env zsh\n\necho \"check\"".to_string();
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_default_args() {
+        let lang = Shell::default();
+        let args = lang.args(vec!["--my-flag".into(), "-o".into(), "file".into()]);
+        let expected_args = vec!["/dev/stdin", "--my-flag", "-o", "file"];
+        assert_eq!(args, expected_args);
+    }
+
+    #[test]
+    fn test_zsh_export() {
+        let lang = Shell::new("zsh");
+        let output = lang.export(vec!["echo \"check\"".into()]);
+        let expected_output = "#!/usr/bin/env zsh\n\necho \"check\"".to_string();
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_zsh_args() {
+        let lang = Shell::new("zsh");
+        let args = lang.args(vec!["--my-flag".into(), "-o".into(), "file".into()]);
+        let expected_args = vec!["/dev/stdin", "--my-flag", "-o", "file"];
+        assert_eq!(args, expected_args);
+    }
+
+    #[test]
+    fn test_bash_export() {
+        let lang = Shell::new("bash");
+        let output = lang.export(vec!["echo \"check\"".into()]);
+        let expected_output = "#!/usr/bin/env bash\n\necho \"check\"".to_string();
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_bash_args() {
+        let lang = Shell::new("bash");
+        let args = lang.args(vec!["--my-flag".into(), "-o".into(), "file".into()]);
+        let expected_args = vec!["/dev/stdin", "--my-flag", "-o", "file"];
+        assert_eq!(args, expected_args);
     }
 }

@@ -1,4 +1,4 @@
-use std::{io::{self, BufRead}, fs::File, path::Path};
+use std::{io::{self, BufRead, BufReader, Lines}, fs::File, path::Path};
 
 mod executor;
 
@@ -41,77 +41,102 @@ fn main() {
         println!(" -- Arguments: {:?}", arguments.args);
     }
 
-    if let Ok(lines) = read_lines(arguments.file) {
-        let (name, executor) = if arguments.language.contains(':') {
-            let parts = arguments.language.split(':').collect::<Vec<&str>>();
+    let lines = match read_lines(arguments.file.clone()) {
+        Ok(it) => it,
+        _ => {
+            println!(" -- File not found: {}", arguments.file);
+            return
+        },
+    };
 
-            (parts.first().unwrap().to_owned(), parts.get(1).unwrap().to_owned())
-        } else {
-            (arguments.language.as_str(), arguments.language.as_str())
-        };
+    let (name, executor) = extract_language(arguments.language.as_str());
+    let content: Vec<String> = extract_content(name, lines);
+    let lang = executor::language_picker(executor);
 
-        if arguments.debug {
-            println!(" -- Target Language: {}", name);
-            println!(" -- Target Executor: {}", executor);
+    if arguments.debug {
+        println!(" -- Target Language: {}", name);
+        println!(" -- Target Executor: {}", executor);
+    }
+
+    if arguments.export {
+        println!("{}", lang.unwrap().export(content));
+
+        return
+    }
+
+    if lang.is_none() {
+        let (supported, alias_list) = help_available();
+        println!(" -- unknown language: {}", arguments.language);
+        println!("available languages:\n{}\n", supported);
+        println!("aliases:\n{}", alias_list);
+
+        return
+    }
+
+
+    let prog = lang.unwrap().exec(content, arguments.args);
+    prog.wait_with_output().expect("Failed to read stdout");
+}
+
+fn help_available() -> (String, String) {
+    let supported = executor::supported_languages()
+        .iter()
+        .map(|l| format!(" - {}", l))
+        .collect::<Vec<String>>()
+        .join("\n");
+
+    let alias_list = executor::aliases()
+        .iter()
+        .map(|(a, n, e)| format!(" - {:<15} => {}::{}", a, n, e))
+        .collect::<Vec<String>>()
+        .join("\n");
+    (supported, alias_list)
+}
+
+fn extract_content(name: &str, lines: Lines<BufReader<File>>) -> Vec<String> {
+    let mut open = false;
+    lines.into_iter().fold(Vec::<String>::new(), |mut c, line| {
+        if let Ok(line) = line {
+            if line == format!("```{}", name) {
+                open = true;
+            } else if line == "```" {
+                open = false;
+            } else if open {
+                c.push(line);
+            }
         }
 
-        let mut open = false;
-        let content: Vec<String> = lines.into_iter().fold(Vec::<String>::new(), |mut c, line| {
-            if let Ok(line) = line {
-                if line == format!("```{}", name) {
-                    open = true;
-                } else if line == "```" {
-                    open = false;
-                } else if open {
-                    c.push(line);
-                }
-            }
+        c
+    })
+}
 
-            c
-        });
+fn extract_language(lang: &str) -> (&str, &str) {
+    if !lang.contains(':') {
+        return (lang, lang);
+    }
 
-        let lang = if let Some(lang) = executor::language_picker(executor) {
-            lang
-        } else {
-            if arguments.export {
-                println!("{}", content.join("\n"));
+    let parts = lang.split(':').collect::<Vec<&str>>();
 
-                return
-            }
+    (parts.first().unwrap().to_owned(), parts.get(1).unwrap().to_owned())
+}
 
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-            println!(" -- unknown language: {0}\n\
-                     available languages:\n\
-                     {1}\n\
-                     \n\
-                     aliases:\n\
-                     {2}\n\
-                     ",
-                     arguments.language,
-                     executor::supported_languages()
-                                .iter()
-                                .map(|l| format!(" - {}", l))
-                                .collect::<Vec<String>>()
-                                .join("\n"),
-                     executor::aliases()
-                                .iter()
-                                .map(|(a, n, e)| format!(" - {:<15} => {}::{}", a, n, e))
-                                .collect::<Vec<String>>()
-                                .join("\n")
-            );
+    #[test]
+    fn test_extract_language() {
+        let test_cases: Vec<(&str, &str, &str)> = vec![
+            ("python", "python", "python"),
+            ("py:python", "py", "python"),
+            ("py:", "py", ""),
+            ("", "", ""),
+        ];
 
-            return
-        };
-
-        if arguments.export {
-            println!("{}", lang.export(content));
-
-            return
+        for case in test_cases {
+            let (name, exec) = extract_language(case.0);
+            assert_eq!(name, case.1);
+            assert_eq!(exec, case.2);
         }
-
-
-        let prog = lang.exec(content, arguments.args);
-
-        prog.wait_with_output().expect("Failed to read stdout");
     }
 }
