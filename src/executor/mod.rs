@@ -15,6 +15,7 @@ pub use shell::Shell;
 pub trait Executor {
     fn exec(&self, script: Vec<String>, argv: Vec<String>) -> Child;
     fn export(&self, script: Vec<String>) -> String;
+    fn binary(&self) -> &'static str;
 }
 
 pub fn language_picker(executor: &str) -> Option<Box<dyn Executor>> {
@@ -26,21 +27,23 @@ pub fn language_picker(executor: &str) -> Option<Box<dyn Executor>> {
 
     match lang {
         "javascript" => {
-            if let Some(executor) = executor {
-            Some(Box::new(JavaScript::new(executor)))
+            let js = if let Some(executor) = executor {
+                JavaScript::new(executor)
             } else {
-                Some(Box::new(JavaScript::default()))
-            }
+                JavaScript::default()
+            };
+            Some(Box::new(js))
         },
         "lua" => Some(Box::new(Lua::new())),
         "python" => Some(Box::new(Python::new())),
         "ruby" => Some(Box::new(Ruby::new())),
         "shell" => {
-            if let Some(executor) = executor {
-                Some(Box::new(Shell::new(executor)))
+            let sh = if let Some(executor) = executor {
+                Shell::new(executor)
             } else {
-                Some(Box::new(Shell::default()))
-            }
+                Shell::default()
+            };
+            Some(Box::new(sh))
         },
         _ => None
     }
@@ -74,4 +77,47 @@ pub fn resolve_alias(name: &str) -> Option<(&'static str, &'static str)> {
     }
 
     None
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_resolve_alias() {
+        let test_cases: Vec<(&str, Option<(&str, &str)>)> = vec![
+            ("bash", Some(("shell", "bash"))),
+            ("zsh", Some(("shell", "zsh"))),
+            ("deno", Some(("javascript", "deno"))),
+            ("something", None),
+        ];
+
+        for case in test_cases {
+            let result = resolve_alias(case.0);
+            assert_eq!(result, case.1);
+        }
+    }
+
+    #[test]
+    fn test_language_picker() {
+        let test_cases: Vec<(&str, Option<&str>)> = vec![
+            ("bash", Some("bash")),
+            ("zsh", Some("zsh")),
+            ("shell", Some("zsh")),
+            ("deno", Some("deno")),
+            ("javascript", Some("node")),
+            ("js", Some("node")),
+            ("something", None),
+        ];
+
+        for case in test_cases {
+            let result = language_picker(case.0);
+            if case.1.is_none() {
+                assert!(result.is_none());
+                continue
+            }
+
+            assert_eq!(Some(result.unwrap().binary()), case.1);
+        }
+    }
 }

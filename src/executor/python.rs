@@ -7,11 +7,8 @@ pub struct Python;
 
 impl Executor for Python {
     fn exec(&self, script: Vec<String>, argv: Vec<String>) -> std::process::Child {
-        let mut args = vec!["-".to_string()];
-        args.extend(argv);
-
         let mut prog = Command::new("python3")
-            .args(args)
+            .args(self.args(argv))
             .stdin(Stdio::piped())
             .spawn()
             .unwrap();
@@ -34,10 +31,41 @@ impl Executor for Python {
 
         header.join("\n")
     }
+
+    fn binary(&self) -> &'static str {
+        "python3"
+    }
 }
 
 impl Python {
     pub fn new() -> Python {
         Python{}
+    }
+
+    fn args(&self, args: Vec<String>) -> Vec<String> {
+        let mut argv = vec!["-".to_string()];
+        argv.extend(args);
+        argv
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_export() {
+        let lang = Python::new();
+        let output = lang.export(vec!["print(\"check\")".into()]);
+        let expected_output = "#!/usr/bin/env python3\n\nprint(\"check\")".to_string();
+        assert_eq!(output, expected_output);
+    }
+
+    #[test]
+    fn test_args() {
+        let lang = Python::new();
+        let args = lang.args(vec!["--my-flag".into(), "-o".into(), "file".into()]);
+        let expected_args = vec!["-", "--my-flag", "-o", "file"];
+        assert_eq!(args, expected_args);
     }
 }
