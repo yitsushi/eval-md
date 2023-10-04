@@ -119,4 +119,16 @@ mod tests {
         let expected_args = vec!["run", "-", "--my-flag", "-o", "file"];
         assert_eq!(args, expected_args);
     }
+
+    #[test]
+    fn test_deno_binary() {
+        let lang = JavaScript::new("deno");
+        assert_eq!(lang.binary(), "deno")
+    }
+
+    #[test]
+    fn test_node_binary() {
+        let lang = JavaScript::new("node");
+        assert_eq!(lang.binary(), "node")
+    }
 }

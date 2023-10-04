@@ -130,6 +130,7 @@ mod tests {
             ("python", "python", "python"),
             ("py:python", "py", "python"),
             ("py:", "py", ""),
+            ("php", "php", "php"),
             ("", "", ""),
         ];
 

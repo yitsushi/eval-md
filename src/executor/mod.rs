@@ -2,12 +2,14 @@ use std::process::Child;
 
 mod javascript;
 mod lua;
+mod php;
 mod python;
 mod ruby;
 mod shell;
 
 pub use javascript::JavaScript;
 pub use lua::Lua;
+pub use php::Php;
 pub use python::Python;
 pub use ruby::Ruby;
 pub use shell::Shell;
@@ -37,6 +39,7 @@ pub fn language_picker(executor: &str) -> Option<Box<dyn Executor>> {
         "lua" => Some(Box::new(Lua::new())),
         "python" => Some(Box::new(Python::new())),
         "ruby" => Some(Box::new(Ruby::new())),
+        "php" => Some(Box::new(Php::new())),
         "shell" => {
             let sh = if let Some(executor) = executor {
                 Shell::new(executor)
@@ -53,6 +56,7 @@ pub fn supported_languages() -> Vec<&'static str> {
     vec![
         "javascript",
         "lua",
+        "php",
         "python",
         "ruby",
         "shell",

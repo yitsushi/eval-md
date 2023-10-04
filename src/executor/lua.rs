@@ -68,4 +68,10 @@ mod tests {
         let expected_args = vec!["-", "--my-flag", "-o", "file"];
         assert_eq!(args, expected_args);
     }
+
+    #[test]
+    fn test_lua_binary() {
+        let lang = Lua::new();
+        assert_eq!(lang.binary(), "lua")
+    }
 }

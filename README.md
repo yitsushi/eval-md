@@ -23,6 +23,7 @@ cargo install eval-md
 
 * JavaScript (node, deno)
 * Lua
+* PHP
 * Python3
 * Ruby
 * Shell (bash, zsh)

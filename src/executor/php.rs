@@ -3,11 +3,11 @@ use std::io::Write;
 
 use super::Executor;
 
-pub struct Ruby;
+pub struct Php;
 
-impl Executor for Ruby {
+impl Executor for Php {
     fn exec(&self, script: Vec<String>, argv: Vec<String>) -> std::process::Child {
-        let mut prog = Command::new("ruby")
+        let mut prog = Command::new("php")
             .args(self.args(argv))
             .stdin(Stdio::piped())
             .spawn()
@@ -23,7 +23,7 @@ impl Executor for Ruby {
 
     fn export(&self, script: Vec<String>) -> String {
         let mut header: Vec<String> = vec![
-            "#!/usr/bin/env ruby".into(),
+            "#!/usr/bin/env php".into(),
             "".into(),
         ];
 
@@ -33,17 +33,17 @@ impl Executor for Ruby {
     }
 
     fn binary(&self) -> &'static str {
-        "ruby"
+        "php"
     }
 }
 
-impl Ruby {
-    pub fn new() -> Ruby {
-        Ruby{}
+impl Php {
+    pub fn new() -> Php {
+        Php{}
     }
 
     fn args(&self, args: Vec<String>) -> Vec<String> {
-        let mut argv = vec!["-".to_string()];
+        let mut argv = vec!["--".to_string()];
         argv.extend(args);
         argv
     }
@@ -55,23 +55,23 @@ mod tests {
 
     #[test]
     fn test_export() {
-        let lang = Ruby::new();
-        let output = lang.export(vec!["puts \"check\"".into()]);
-        let expected_output = "#!/usr/bin/env ruby\n\nputs \"check\"".to_string();
+        let lang = Php::new();
+        let output = lang.export(vec!["<?php echo \"check\" ?>".into()]);
+        let expected_output = "#!/usr/bin/env php\n\n<?php echo \"check\" ?>".to_string();
         assert_eq!(output, expected_output);
     }
 
     #[test]
     fn test_args() {
-        let lang = Ruby::new();
+        let lang = Php::new();
         let args = lang.args(vec!["--my-flag".into(), "-o".into(), "file".into()]);
-        let expected_args = vec!["-", "--my-flag", "-o", "file"];
+        let expected_args = vec!["--", "--my-flag", "-o", "file"];
         assert_eq!(args, expected_args);
     }
 
     #[test]
-    fn test_ruby_binary() {
-        let lang = Ruby::new();
-        assert_eq!(lang.binary(), "ruby")
+    fn test_php_binary() {
+        let lang = Php::new();
+        assert_eq!(lang.binary(), "php")
     }
 }
