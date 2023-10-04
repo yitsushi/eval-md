@@ -4,14 +4,12 @@ The releases are automated via [`release-plz`][release-plz],
 [`cargo-dist`][cargo-dist] and [GitHub Actions][gh-action].
 
 1. Run `make release-prepare` to update `CHANGELOG.md`, version in `Cargo.toml`,
-   and commit the changes.
+   commit the changes, and create a pull request.
 
    - Changelog can be generated separately with `update-changelog`. If the
      version is already in the changelog, it will not update it.
 
-2. Run `git push`.
-
-3. Run `make release`.
+3. After the Pull Request is merged, run `make release`.
 
    - This will create a tag and update the [crates.io][crates] release.
 
