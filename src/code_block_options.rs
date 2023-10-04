@@ -19,7 +19,6 @@ impl CodeBlockOption {
         }
         let parts = line.split('#');
         if let Some(options) = parts.last() {
-            println!(" -- {} -> {:?}", line, options);
             let options = options.split(' ')
                           .filter_map(|x| CodeBlockOption::from_str(x).ok())
                           .collect::<Vec<CodeBlockOption>>();
