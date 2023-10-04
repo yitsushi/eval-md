@@ -55,7 +55,7 @@ release-prepare: update-version update-changelog
 	git add Cargo.lock Cargo.toml CHANGELOG.md
 	git commit -m "release: $$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"
 	git push -u origin $$(git rev-parse --abbrev-ref HEAD)
-	gh pr create --label=release
+	gh pr create --label=release --fill
 
 release:
 	@git checkout main
