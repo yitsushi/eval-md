@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 
 <!-- changes -->
 
+## [0.5.3]
+
+### What's Changed
+* refactor: use github changelog instead of cliff by @yitsushi in https://github.com/yitsushi/eval-md/pull/10
+* refactor: use pr generation with gh cli by @yitsushi in https://github.com/yitsushi/eval-md/pull/11
+
+
+**Full Changelog**: https://github.com/yitsushi/eval-md/compare/v0.5.2...0.5.3
+
 ## [0.5.2] - 2023-10-04
 
 ### 📇 Features
