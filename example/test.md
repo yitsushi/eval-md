@@ -87,3 +87,9 @@ const fancy = function() {
 };
 console.log(fancy());
 ```
+
+### PHP
+
+```php
+Fancy: <?php echo "nice :)\n"; ?>
+```
