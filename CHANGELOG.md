@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 <!-- changes -->
 
+## [v0.5.4]
+
+**Full Changelog**: https://github.com/yitsushi/eval-md/compare/v0.5.3...v0.5.4
+
 ## [0.5.3]
 
 ### What's Changed
