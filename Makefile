@@ -1,5 +1,4 @@
 ROOT_DIR := $(shell pwd)
-GIT_TAG := $(shell git describe --tags)
 
 build:
 	cargo build --release
@@ -38,17 +37,23 @@ codecov:
 
 	xdg-open $(ROOT_DIR)/target/codecov/coverage/index.html
 
+update-version:
+	@release-plz update
+
 update-changelog:
-	@grep '^## \[$(GIT_TAG)\]' CHANGELOG.md >/dev/null 2>&1 \
+	APP_VERSION="$$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"; \
+	grep '^## \['$${APP_VERSION}'\]' CHANGELOG.md >/dev/null 2>&1 \
 		&& echo "This version is already in the changelog!" \
 		|| sed -e '/^<!-- changes -->$$/r'<( \
-		echo -e "\n## [$(GIT_TAG)]\n"; \
-		gh api repos/yitsushi/eval-md/releases/generate-notes -F tag_name=$(GIT_TAG) --jq .body \
+		echo -e "\n## [$${APP_VERSION}]\n"; \
+		gh api repos/yitsushi/eval-md/releases/generate-notes -F tag_name=$${APP_VERSION} --jq .body \
 			| sed -e 's/^#/##/' \
 	) -i -- CHANGELOG.md
 
-release-pr: update-changelog
-	@release-plz release-pr --git-token "${GITHUB_TOKEN}"
+release-prepare: update-version update-changelog
+	git add Cargo.lock Cargo.toml CHANGELOG.md
+	git commit -m "release: $$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"
+	@echo " -> Next step: git push"
 
 release:
 	@release-plz release
