@@ -1,8 +1,10 @@
 use std::{io::{self, BufRead, BufReader, Lines}, fs::File, path::Path};
 
 mod executor;
+mod code_block_options;
 
 use clap::Parser;
+use code_block_options::{CodeBlockOption, find_group_name};
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -15,6 +17,10 @@ struct Args {
     file: String,
     /// Arguments to the script.
     args: Vec<String>,
+
+    /// Group name.
+    #[arg(short, long)]
+    group: Option<String>,
 
     /// Export the scirpt and skip execution.
     /// Export accepts any string value as target language.
@@ -50,7 +56,9 @@ fn main() {
     };
 
     let (name, executor) = extract_language(arguments.language.as_str());
-    let content: Vec<String> = extract_content(name, lines);
+    let content: Vec<String> = extract_content(name, lines, ExtractOptions {
+        group: arguments.group,
+    });
     let lang = executor::language_picker(executor);
 
     if arguments.debug {
@@ -93,12 +101,23 @@ fn help_available() -> (String, String) {
     (supported, alias_list)
 }
 
-fn extract_content(name: &str, lines: Lines<BufReader<File>>) -> Vec<String> {
+#[derive(Default, Debug)]
+struct ExtractOptions {
+    group: Option<String>
+}
+
+fn extract_content(name: &str, lines: Lines<BufReader<File>>, opts: ExtractOptions) -> Vec<String> {
+    let pattern = format!("```{}", name);
     let mut open = false;
     lines.into_iter().fold(Vec::<String>::new(), |mut c, line| {
         if let Ok(line) = line {
-            if line == format!("```{}", name) {
-                open = true;
+            if line.starts_with(&pattern) {
+                open = if opts.group.is_none() {
+                    true
+                } else {
+                    let group = find_group_name(CodeBlockOption::parse_options(&line));
+                    group == opts.group.clone().unwrap_or_default()
+                };
             } else if line == "```" {
                 open = false;
             } else if open {
