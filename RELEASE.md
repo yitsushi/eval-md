@@ -9,16 +9,13 @@ The releases are automated via [`release-plz`][release-plz],
    - Changelog can be generated separately with `update-changelog`. If the
      version is already in the changelog, it will not update it.
 
-3. After the Pull Request is merged, run `make release`.
+2. After the Pull Request is merged, run `make release`.
 
    - This will create a tag and update the [crates.io][crates] release.
-
-4. Run `git push --tags` the tag.
-
    - This will trigger `cargo-dist` and release binaries will be built in via
      [release workflow](.github/workflows/release.yml).
 
-5. Announce the release on social platforms.
+3. Announce the release on social platforms.
 
 
 [release-plz]: https:///github.com/MarcoIeni/release-plz
