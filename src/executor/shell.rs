@@ -116,4 +116,16 @@ mod tests {
         let expected_args = vec!["/dev/stdin", "--my-flag", "-o", "file"];
         assert_eq!(args, expected_args);
     }
+
+    #[test]
+    fn test_bash_binary() {
+        let lang = Shell::new("bash");
+        assert_eq!(lang.binary(), "bash")
+    }
+
+    #[test]
+    fn test_zsh_binary() {
+        let lang = Shell::new("zsh");
+        assert_eq!(lang.binary(), "zsh")
+    }
 }

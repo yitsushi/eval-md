@@ -68,4 +68,10 @@ mod tests {
         let expected_args = vec!["--", "--my-flag", "-o", "file"];
         assert_eq!(args, expected_args);
     }
+
+    #[test]
+    fn test_php_binary() {
+        let lang = Php::new();
+        assert_eq!(lang.binary(), "php")
+    }
 }
