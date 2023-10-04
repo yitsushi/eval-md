@@ -41,7 +41,7 @@ update-version:
 	@release-plz update
 
 update-changelog:
-	APP_VERSION="$$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"; \
+	APP_VERSION="v$$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"; \
 	grep '^## \['$${APP_VERSION}'\]' CHANGELOG.md >/dev/null 2>&1 \
 		&& echo "This version is already in the changelog!" \
 		|| sed -e '/^<!-- changes -->$$/r'<( \
@@ -53,7 +53,7 @@ update-changelog:
 release-prepare: update-version update-changelog
 	git checkout -b release-$$(date '+%Y-%m-%d-%s')
 	git add Cargo.lock Cargo.toml CHANGELOG.md
-	git commit -m "release: $$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"
+	git commit -m "release: v$$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"
 	git push -u origin $$(git rev-parse --abbrev-ref HEAD)
 	gh pr create --label=release --fill
 
