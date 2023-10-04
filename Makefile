@@ -58,7 +58,7 @@ release-prepare: update-version update-changelog
 	gh pr create --label=release --fill
 
 release:
-	@git checkout main
-	@git fetch origin/main
-	@git reset --hard origin/main
-	@release-plz release
+	git checkout main
+	git fetch origin main
+	git reset --hard origin/main
+	release-plz release
