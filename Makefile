@@ -51,9 +51,14 @@ update-changelog:
 	) -i -- CHANGELOG.md
 
 release-prepare: update-version update-changelog
+	git checkout -b release-$((date '+%Y-%m-%d-%s'))
 	git add Cargo.lock Cargo.toml CHANGELOG.md
 	git commit -m "release: $$(cargo metadata --format-version=1 --no-deps | jq --raw-output '.packages.[0].version')"
-	@echo " -> Next step: git push"
+	git push -u origin $$(git rev-parse --abbrev-ref HEAD)
+	gh pr create --label=release
 
 release:
+	@git checkout main
+	@git fetch origin/main
+	@git reset --hard origin/main
 	@release-plz release
