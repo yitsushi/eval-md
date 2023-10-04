@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file.
 
+<!-- changes -->
+
 ## [0.5.2] - 2023-10-04
 
 ### 📇 Features

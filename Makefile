@@ -1,4 +1,5 @@
 ROOT_DIR := $(shell pwd)
+GIT_TAG := $(shell git describe --tags)
 
 build:
 	cargo build --release
@@ -36,3 +37,18 @@ codecov:
 		-o $(ROOT_DIR)/target/codecov/coverage/
 
 	xdg-open $(ROOT_DIR)/target/codecov/coverage/index.html
+
+update-changelog:
+	@grep '^## \[$(GIT_TAG)\]' CHANGELOG.md >/dev/null 2>&1 \
+		&& echo "This version is already in the changelog!" \
+		|| sed -e '/^<!-- changes -->$$/r'<( \
+		echo -e "\n## [$(GIT_TAG)]\n"; \
+		gh api repos/yitsushi/eval-md/releases/generate-notes -F tag_name=$(GIT_TAG) --jq .body \
+			| sed -e 's/^#/##/' \
+	) -i -- CHANGELOG.md
+
+release-pr: update-changelog
+	@release-plz release-pr --git-token "${GITHUB_TOKEN}"
+
+release:
+	@release-plz release
