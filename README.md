@@ -127,3 +127,48 @@ text, did not really spend much time on it).
 helmrepository.source.toolkit.fluxcd.io/podinfo created
 helmrelease.helm.toolkit.fluxcd.io/podinfo created
 ```
+
+### Group Filter
+
+With a special marker, key-value pairs can be defined on code blocks:
+
+
+    ```bash #group=a something=else
+    echo "This is group A"
+    ```
+    
+    ```bash #group=b
+    echo "This is group B"
+    ```
+    
+    ```bash
+    echo "This one does not belon anywhere"
+    ```
+
+Without any extra arguments, all `bash` blocks will be evaluated:
+
+```bash
+❯ ./target/release/eval-md bash a.md
+This is group A
+This is group B
+This one does not belon anywhere
+```
+
+If we want to evaluate only a specific group, we can set the filter with the
+`--group` flag:
+
+```bash
+❯ ./target/release/eval-md bash a.md --group=a
+This is group A
+
+❯ ./target/release/eval-md bash a.md --group=b
+This is group B
+```
+
+If `--group` flag is specified, but with empty value, it means evaluate
+everything that has no group.
+
+```bash
+❯ ./target/release/eval-md bash a.md --group=
+This one does not belon anywhere
+```

@@ -14,6 +14,20 @@ echo "nice in bash"
 echo "Arguments: ${*}"
 ```
 
+### With group name
+
+```bash #group=a something
+echo "group A"
+```
+
+```bash #group=b
+echo "group B"
+```
+
+```bash #group=a other=value
+echo "group A 2nd time"
+```
+
 ## Python
 
 And we can have Python too :)
