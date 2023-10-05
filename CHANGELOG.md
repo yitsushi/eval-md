@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 <!-- changes -->
 
+## [v1.0.0]
+
+### What's Changed
+* feat: pick mode by @yitsushi in https://github.com/yitsushi/eval-md/pull/14
+
+
+**Full Changelog**: https://github.com/yitsushi/eval-md/compare/v0.5.4...v1.0.0
+
 ## [v0.5.4]
 
 **Full Changelog**: https://github.com/yitsushi/eval-md/compare/v0.5.3...v0.5.4
