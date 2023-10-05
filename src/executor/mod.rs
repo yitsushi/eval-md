@@ -14,9 +14,11 @@ pub use python::Python;
 pub use ruby::Ruby;
 pub use shell::Shell;
 
+use crate::code_container::CodeContainer;
+
 pub trait Executor {
-    fn exec(&self, script: Vec<String>, argv: Vec<String>) -> Child;
-    fn export(&self, script: Vec<String>) -> String;
+    fn exec(&self, script: CodeContainer, argv: Vec<String>) -> Child;
+    fn export(&self, script: CodeContainer) -> String;
     fn binary(&self) -> &'static str;
 }
 

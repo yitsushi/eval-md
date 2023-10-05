@@ -1,12 +1,14 @@
 use std::process::{Command, Stdio};
 use std::io::Write;
 
+use crate::code_container::CodeContainer;
+
 use super::Executor;
 
 pub struct Ruby;
 
 impl Executor for Ruby {
-    fn exec(&self, script: Vec<String>, argv: Vec<String>) -> std::process::Child {
+    fn exec(&self, script: CodeContainer, argv: Vec<String>) -> std::process::Child {
         let mut prog = Command::new("ruby")
             .args(self.args(argv))
             .stdin(Stdio::piped())
@@ -15,19 +17,19 @@ impl Executor for Ruby {
 
         let mut stdin = prog.stdin.take().expect("Failed to open stdin");
         std::thread::spawn(move || {
-            stdin.write_all(script.join("\n").as_bytes()).expect("Failed to write to stdin");
+            stdin.write_all(script.lines().as_bytes()).expect("Failed to write to stdin");
         });
 
         prog
     }
 
-    fn export(&self, script: Vec<String>) -> String {
+    fn export(&self, script: CodeContainer) -> String {
         let mut header: Vec<String> = vec![
             "#!/usr/bin/env ruby".into(),
             "".into(),
         ];
 
-        header.extend(script);
+        header.push(script.lines());
 
         header.join("\n")
     }
@@ -55,8 +57,13 @@ mod tests {
 
     #[test]
     fn test_export() {
+        let mut code = CodeContainer::new();
+        code.open_new_group();
+        code.push("puts \"check\"".into());
+        code.close_group();
+
         let lang = Ruby::new();
-        let output = lang.export(vec!["puts \"check\"".into()]);
+        let output = lang.export(code);
         let expected_output = "#!/usr/bin/env ruby\n\nputs \"check\"".to_string();
         assert_eq!(output, expected_output);
     }

@@ -1,6 +1,8 @@
 use std::process::{Command, Stdio};
 use std::io::Write;
 
+use crate::code_container::CodeContainer;
+
 use super::Executor;
 
 #[derive(Default)]
@@ -11,7 +13,7 @@ pub enum JavaScript {
 }
 
 impl Executor for JavaScript {
-    fn exec(&self, script: Vec<String>, argv: Vec<String>) -> std::process::Child {
+    fn exec(&self, script: CodeContainer, argv: Vec<String>) -> std::process::Child {
         let mut prog = Command::new(self.target_str())
             .args(self.args(argv))
             .stdin(Stdio::piped())
@@ -20,19 +22,19 @@ impl Executor for JavaScript {
 
         let mut stdin = prog.stdin.take().expect("Failed to open stdin");
         std::thread::spawn(move || {
-            stdin.write_all(script.join("\n").as_bytes()).expect("Failed to write to stdin");
+            stdin.write_all(script.lines().as_bytes()).expect("Failed to write to stdin");
         });
 
         prog
     }
 
-    fn export(&self, script: Vec<String>) -> String {
+    fn export(&self, script: CodeContainer) -> String {
         let mut header: Vec<String> = vec![
             format!("#!/usr/bin/env {}", self.target_str()),
             "".into(),
         ];
 
-        header.extend(script);
+        header.push(script.lines());
 
         header.join("\n")
     }
@@ -74,8 +76,13 @@ mod tests {
 
     #[test]
     fn test_default_export() {
+        let mut code = CodeContainer::new();
+        code.open_new_group();
+        code.push("console.log(\"check\")".into());
+        code.close_group();
+
         let lang = JavaScript::default();
-        let output = lang.export(vec!["console.log(\"check\")".into()]);
+        let output = lang.export(code);
         let expected_output = "#!/usr/bin/env node\n\nconsole.log(\"check\")".to_string();
         assert_eq!(output, expected_output);
     }
@@ -90,8 +97,13 @@ mod tests {
 
     #[test]
     fn test_node_export() {
+        let mut code = CodeContainer::new();
+        code.open_new_group();
+        code.push("console.log(\"check\")".into());
+        code.close_group();
+
         let lang = JavaScript::new("node");
-        let output = lang.export(vec!["console.log(\"check\")".into()]);
+        let output = lang.export(code);
         let expected_output = "#!/usr/bin/env node\n\nconsole.log(\"check\")".to_string();
         assert_eq!(output, expected_output);
     }
@@ -106,8 +118,13 @@ mod tests {
 
     #[test]
     fn test_deno_export() {
+        let mut code = CodeContainer::new();
+        code.open_new_group();
+        code.push("console.log(\"check\")".into());
+        code.close_group();
+
         let lang = JavaScript::new("deno");
-        let output = lang.export(vec!["console.log(\"check\")".into()]);
+        let output = lang.export(code);
         let expected_output = "#!/usr/bin/env deno\n\nconsole.log(\"check\")".to_string();
         assert_eq!(output, expected_output);
     }
