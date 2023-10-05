@@ -1,10 +1,12 @@
-use std::{io::{self, BufRead, BufReader, Lines}, fs::File, path::Path};
+use std::{io::{self, BufRead, BufReader, Lines, Write}, fs::File, path::Path};
 
 mod executor;
 mod code_block_options;
+mod code_container;
 
 use clap::Parser;
 use code_block_options::{CodeBlockOption, find_group_name};
+use code_container::CodeContainer;
 
 #[derive(Debug, Parser)]
 #[command(author, version, about, long_about = None)]
@@ -30,6 +32,11 @@ struct Args {
     /// Debug mode.
     #[arg(short, long)]
     debug: bool,
+
+    /// Pick mode will ask each code block to be included in the final script
+    /// or not.
+    #[arg(short, long)]
+    pick: bool,
 }
 
 fn read_lines<P>(filename: P) -> io::Result<io::Lines<io::BufReader<File>>>
@@ -56,10 +63,16 @@ fn main() {
     };
 
     let (name, executor) = extract_language(arguments.language.as_str());
-    let content: Vec<String> = extract_content(name, lines, ExtractOptions {
+    let content: CodeContainer = extract_content(name, lines, ExtractOptions {
         group: arguments.group,
+        pick: arguments.pick,
     });
     let lang = executor::language_picker(executor);
+
+    if arguments.pick {
+        // Add an extra empty line to separate "pick" answers.
+        eprintln!()
+    }
 
     if arguments.debug {
         println!(" -- Target Language: {}", name);
@@ -103,24 +116,40 @@ fn help_available() -> (String, String) {
 
 #[derive(Default, Debug)]
 struct ExtractOptions {
-    group: Option<String>
+    group: Option<String>,
+    pick: bool,
 }
 
-fn extract_content(name: &str, lines: Lines<BufReader<File>>, opts: ExtractOptions) -> Vec<String> {
+fn extract_content(name: &str, lines: Lines<BufReader<File>>, opts: ExtractOptions) -> CodeContainer {
     let pattern = format!("```{}", name);
-    let mut open = false;
-    lines.into_iter().fold(Vec::<String>::new(), |mut c, line| {
+    lines.into_iter().fold(CodeContainer::new(), |mut c, line| {
         if let Ok(line) = line {
             if line.starts_with(&pattern) {
-                open = if opts.group.is_none() {
-                    true
-                } else {
-                    let group = find_group_name(CodeBlockOption::parse_options(&line));
-                    group == opts.group.clone().unwrap_or_default()
-                };
+                if opts.group.is_none() {
+                    c.open_new_group();
+                    return c
+                }
+                let group = find_group_name(CodeBlockOption::parse_options(&line));
+                if group == opts.group.clone().unwrap_or_default() {
+                    c.open_new_group();
+
+                    return c
+                }
             } else if line == "```" {
-                open = false;
-            } else if open {
+                if let Some(block) = c.open_lines() {
+                    if !block.is_empty() {
+                        if opts.pick && !ask_yes_no(block) {
+                            c.discard();
+                            return c
+                        }
+
+                        c.close_group();
+                        return c
+                    }
+                }
+
+                c.discard()
+            } else if c.is_open() {
                 c.push(line);
             }
         }
@@ -137,6 +166,29 @@ fn extract_language(lang: &str) -> (&str, &str) {
     let parts = lang.split(':').collect::<Vec<&str>>();
 
     (parts.first().unwrap().to_owned(), parts.get(1).unwrap().to_owned())
+}
+
+fn ask_yes_no(block: String) -> bool {
+    eprintln!();
+    eprintln!("---");
+    eprintln!("{}", block);
+    eprintln!("---");
+
+    loop {
+        let mut buffer = String::new();
+
+        eprint!(" --> Do you want to add this block? (yes/no) ");
+        io::stderr().flush().unwrap();
+
+        if io::stdin().read_line(&mut buffer).is_ok() {
+            if buffer.trim() == "yes" {
+                return true
+            }
+            if buffer.trim() == "no" {
+                return false
+            }
+        };
+    }
 }
 
 #[cfg(test)]

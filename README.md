@@ -148,7 +148,7 @@ With a special marker, key-value pairs can be defined on code blocks:
 Without any extra arguments, all `bash` blocks will be evaluated:
 
 ```bash
-❯ ./target/release/eval-md bash a.md
+❯ eval-md bash a.md
 This is group A
 This is group B
 This one does not belon anywhere
@@ -158,10 +158,10 @@ If we want to evaluate only a specific group, we can set the filter with the
 `--group` flag:
 
 ```bash
-❯ ./target/release/eval-md bash a.md --group=a
+❯ eval-md bash a.md --group=a
 This is group A
 
-❯ ./target/release/eval-md bash a.md --group=b
+❯ eval-md bash a.md --group=b
 This is group B
 ```
 
@@ -171,4 +171,34 @@ everything that has no group.
 ```bash
 ❯ ./target/release/eval-md bash a.md --group=
 This one does not belon anywhere
+```
+### Pick mode
+
+With the `--pick` flag, we'll be asked about each group to add it to the script
+or discard it. This is good if we have more than one code blocks, but we don't
+want all of them to be evaluated.
+
+Group selection and Pick mode works together, so it is possible to filter on a
+group and discard parts from it before evaluation.
+
+Pick mode questions are printed to `stderr`, the program output can be
+redirected to a file or pipe, it is useful with `--export`
+
+```
+❯ eval-md bash a.md --group=a --pick --export > myscript.sh
+
+---
+echo "This is group A"
+---
+ --> Do you want to add this block? (yes/no) yes
+
+---
+echo "This is group A again"
+---
+ --> Do you want to add this block? (yes/no) no
+
+❯ cat myscript.sh
+#!/usr/bin/env bash
+
+echo "This is group A"
 ```
