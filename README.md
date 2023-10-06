@@ -202,3 +202,27 @@ echo "This is group A again"
 
 echo "This is group A"
 ```
+
+### Evaluate All as One Script
+
+This is a weird case, but someone said they would use it and that would be cool.
+If the name is set to `all` with a specified interpreter like `all:python`, then
+all code blocks will be used in the document regardless the language marker on
+them, and it will be evaluated with the specified interpreter (in this case
+`python`).
+
+See the `example/use-all.md` example:
+
+```bash
+❯ eval-md all:python example/use-all.md
+Do something with:
+
+
+<html>
+  <head><title>Nice</title></head>
+  <body>
+    <div id="app">awesome</div>
+  </body>
+</html>
+
+```

@@ -121,7 +121,11 @@ struct ExtractOptions {
 }
 
 fn extract_content(name: &str, lines: Lines<BufReader<File>>, opts: ExtractOptions) -> CodeContainer {
-    let pattern = format!("```{}", name);
+    let pattern = if name == "all" {
+        "```".to_string()
+    } else {
+        format!("```{}", name)
+    };
     lines.into_iter().fold(CodeContainer::new(), |mut c, line| {
         if let Ok(line) = line {
             if line.starts_with(&pattern) {
