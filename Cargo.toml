@@ -1,6 +1,6 @@
 [package]
 name = "eval-md"
-version = "1.0.0"
+version = "1.1.0"
 edition = "2021"
 authors = [ "Efertone <efertone@pm.me>" ]
 description = "This is a tool to evaluate or export code from Markdown files"

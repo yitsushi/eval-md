@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 <!-- changes -->
 
+## [v1.1.0]
+
+### What's Changed
+* feat: allow 'all' to evaluate all code blocks by @yitsushi in https://github.com/yitsushi/eval-md/pull/16
+
+
+**Full Changelog**: https://github.com/yitsushi/eval-md/compare/v1.0.0...v1.1.0
+
 ## [v1.0.0]
 
 ### What's Changed
