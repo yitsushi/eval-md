@@ -167,9 +167,9 @@ fn extract_language(lang: &str) -> (&str, &str) {
         return (lang, lang);
     }
 
-    let parts = lang.split(':').collect::<Vec<&str>>();
+    let mut parts = lang.splitn(2, ':');
 
-    (parts.first().unwrap().to_owned(), parts.get(1).unwrap().to_owned())
+    (parts.next().unwrap(), parts.next().unwrap())
 }
 
 fn ask_yes_no(block: String) -> bool {
