@@ -22,6 +22,13 @@ lto = "thin"
 [dependencies]
 clap = { version = "4.4.6", features = ["derive"] }
 
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+
+[[bench]]
+name = "main"
+harness = false
+
 # Config for 'cargo dist'
 [workspace.metadata.dist]
 # The preferred cargo-dist version to use in CI (Cargo.toml SemVer syntax)
