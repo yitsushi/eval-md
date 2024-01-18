@@ -20,7 +20,7 @@ inherits = "release"
 lto = "thin"
 
 [dependencies]
-clap = { version = "4.4.13", features = ["derive"] }
+clap = { version = "4.4.16", features = ["derive"] }
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
