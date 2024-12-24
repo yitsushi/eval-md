@@ -74,28 +74,33 @@ fn main() {
         eprintln!()
     }
 
-    if arguments.debug {
-        println!(" -- Target Language: {}", name);
-        println!(" -- Target Executor: {}", executor);
-    }
-
-    if arguments.export {
-        println!("{}", lang.unwrap().export(content));
-
-        return
-    }
-
-    if lang.is_none() {
+    let lang = if let Some(lang) = lang {
+        lang
+    } else {
         let (supported, alias_list) = help_available();
         println!(" -- unknown language: {}", arguments.language);
         println!("available languages:\n{}\n", supported);
         println!("aliases:\n{}", alias_list);
 
         return
+    };
+
+    if arguments.debug {
+        println!(" -- Target Language: {}", name);
+        println!(" -- Target Executor: {}", executor);
     }
 
+    if arguments.export {
+        println!("{}", lang.export(content));
 
-    let prog = lang.unwrap().exec(content, arguments.args);
+        return
+    }
+
+    if arguments.debug {
+        println!(" -- Target Binary: {}", lang.binary());
+    }
+
+    let prog = lang.exec(content, arguments.args);
     prog.wait_with_output().expect("Failed to read stdout");
 }
 
